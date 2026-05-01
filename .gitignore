@@ -1,0 +1,16 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars.backup
+
+# Node
+node_modules/
+dist/
+
+# Java
+target/
+
+# Env
+.env

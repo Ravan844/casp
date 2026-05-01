@@ -1,0 +1,6 @@
+project_name        = "casp"
+environment         = "dev"
+location            = "westeurope"
+admin_public_ip     = "185.146.112.74/32"
+admin_username      = "azureuser"
+ssh_public_key_path = "~/.ssh/id_rsa_casp.pub"
