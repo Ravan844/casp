@@ -47,6 +47,15 @@ resource "azurerm_subnet" "ops" {
   address_prefixes     = ["10.10.5.0/24"]
 }
 
+resource "azurerm_subnet" "private_endpoints" {
+  name                 = "snet-private-endpoints"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = ["10.10.6.0/24"]
+
+  private_endpoint_network_policies_enabled = false
+}
+
 # -------------------------
 # Network Security Groups
 # -------------------------
@@ -89,6 +98,41 @@ resource "azurerm_network_security_group" "frontend" {
     source_port_range          = "*"
     destination_port_range     = "*"
     source_address_prefix      = "Internet"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "Allow-AzureLoadBalancer-Frontend"
+    priority                   = 115
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "AzureLoadBalancer"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-FrontendSubnet-HTTP"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "10.10.2.0/24"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-Ops-HTTP-Test"
+    priority                   = 125
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "10.10.5.0/24"
     destination_address_prefix = "*"
   }
 }
@@ -143,6 +187,41 @@ resource "azurerm_network_security_group" "backend" {
     source_port_range          = "*"
     destination_port_range     = "*"
     source_address_prefix      = "Internet"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "Allow-AzureLoadBalancer-Backend"
+    priority                   = 115
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "AzureLoadBalancer"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-BackendSubnet-8080"
+    priority                   = 130
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "10.10.3.0/24"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-Ops-Backend-Test"
+    priority                   = 135
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "10.10.5.0/24"
     destination_address_prefix = "*"
   }
 }

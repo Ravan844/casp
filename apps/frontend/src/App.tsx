@@ -17,7 +17,7 @@ function App() {
     if (!url.trim()) return;
 
     try {
-      const response = await fetch("http://localhost:8080/api/analyze", {
+      const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

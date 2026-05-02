@@ -21,3 +21,11 @@ output "backend_subnet_id" {
 output "ops_subnet_id" {
   value = azurerm_subnet.ops.id
 }
+
+output "appgw_subnet_id" {
+  value = azurerm_subnet.appgw.id
+}
+
+output "private_endpoints_subnet_id" {
+  value = azurerm_subnet.private_endpoints.id
+}

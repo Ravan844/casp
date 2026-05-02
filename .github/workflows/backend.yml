@@ -1,0 +1,37 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build backend
+        run: |
+          cd apps/backend
+          mvn clean package -DskipTests
+
+      - name: Deploy backend with Ansible
+        run: |
+          JAR_PATH=$(ls ${GITHUB_WORKSPACE}/apps/backend/target/*.jar | head -n 1)
+
+          ansible-playbook \
+            -i /home/azureuser/casp/config/ansible/inventories/dev/hosts.yml \
+            /home/azureuser/casp/config/ansible/playbooks/deploy-backend.yml \
+            --extra-vars "artifact_path=$JAR_PATH"
