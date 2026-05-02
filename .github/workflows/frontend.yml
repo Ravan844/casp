@@ -25,7 +25,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Deploy with Ansible
+            - name: Deploy with Ansible
         run: |
           cd /home/azureuser/config/ansible
           ansible-playbook playbooks/deploy-frontend.yml \
