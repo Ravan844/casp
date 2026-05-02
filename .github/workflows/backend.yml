@@ -26,6 +26,15 @@ jobs:
           cd apps/backend
           mvn clean package -DskipTests
 
+      - name: SonarQube scan
+        run: |
+          cd apps/backend
+          mvn sonar:sonar \
+            -Dsonar.projectKey=casp-linkguardian-backend \
+            -Dsonar.projectName="CASP LinkGuardian Backend" \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
       - name: Deploy backend with Ansible
         run: |
           cd /home/azureuser/config/ansible
