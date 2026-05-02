@@ -28,8 +28,8 @@ jobs:
           npm run build
 
       - name: Deploy frontend with Ansible
-        run: |
-          ansible-playbook \
-            -i /home/azureuser/casp/config/ansible/inventories/dev/hosts.yml \
-            /home/azureuser/casp/config/ansible/playbooks/deploy-frontend.yml \
-            --extra-vars "artifact_path=${GITHUB_WORKSPACE}/apps/frontend/dist"
+  run: |
+    cd /home/azureuser/config/ansible
+    ansible-playbook playbooks/deploy-frontend.yml \
+      -i inventories/dev/hosts.yml \
+      --extra-vars "artifact_path=${GITHUB_WORKSPACE}/apps/frontend/dist"
