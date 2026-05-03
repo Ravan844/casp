@@ -96,7 +96,7 @@ setHistory((prev) => [data, ...prev].slice(0, 8));
             Secure URL Safety Checker
           </div>
 
-          <h1>LinGuardian</h1>
+          <h1>LinkGuardian</h1>
 
           <p className="subtitle">
             Check suspicious links before you click.
