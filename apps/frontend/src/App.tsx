@@ -1,20 +1,52 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import "./App.css";
 
 type ScanResult = {
-  url: string;
-  status: "SAFE" | "SUSPICIOUS" | "DANGEROUS";
-  score: number;
-  issues: string[];
+  url?: string;
+  status?: string;
+  score?: number;
+  issues?: string[] | string;
+  error?: boolean;
 };
 
-function App() {
+const trustBadges = [
+  "Trusted HTTPS",
+  "Private Azure Architecture",
+  "WAF Protected",
+  "Monitored",
+];
+
+const steps = [
+  "Paste URL",
+  "Analyze Signals",
+  "Get Safety Feedback",
+];
+
+function normalizeIssues(issues: ScanResult["issues"]) {
+  if (!issues) return [];
+  if (Array.isArray(issues)) return issues;
+  return issues
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export default function App() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<ScanResult | null>(null);
-  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleAnalyze = async () => {
+  const issues = useMemo(() => normalizeIssues(result?.issues), [result]);
+
+  const isSafe =
+    result?.status?.toLowerCase() === "safe" ||
+    result?.status?.toLowerCase() === "likely_safe";
+
+  const analyze = async () => {
     if (!url.trim()) return;
+
+    setLoading(true);
+    setResult(null);
 
     try {
       const response = await fetch("/api/analyze", {
@@ -25,110 +57,163 @@ function App() {
         body: JSON.stringify({ url: url.trim() }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`Request failed with ${response.status}`);
+      }
 
+      const data = await response.json();
       setResult(data);
-      setHistory((prev) => [data, ...prev].slice(0, 5));
     } catch (error) {
-      console.error("Backend connection error:", error);
-      alert("Backend işləmir. Əvvəl backend serveri başladın.");
+      console.error("Analyze error:", error);
+      setResult({ error: true });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="page">
-      <section className="hero">
-        <div>
-          <p className="eyebrow">LinkGuardian</p>
-          <h1>Check suspicious links before you click.</h1>
+    <main className="app-shell">
+      <div className="orb orb-one" />
+      <div className="orb orb-two" />
+      <div className="grid-overlay" />
+
+      <section className="hero-section">
+        <div className="hero-copy">
+          <div className="top-badge">
+            <span className="pulse-dot" />
+            Secure URL Safety Checker
+          </div>
+
+          <h1>CheckLink</h1>
+
           <p className="subtitle">
-            Paste any link and get an instant risk score, threat level, and clear
-            reasons why it may be dangerous.
+            Check suspicious links before you click.
+          </p>
+
+          <p className="supporting-text">
+            A simple URL safety checker backed by secure, automated,
+            monitored cloud engineering.
           </p>
         </div>
 
-        <div className="heroBadge">
-          <span>🛡️</span>
-          <strong>Backend-powered URL Risk Scan</strong>
-        </div>
-      </section>
+        <section className="analyzer-card" aria-label="URL analyzer">
+          <div className="card-header">
+            <div>
+              <p className="eyebrow">URL analysis</p>
+              <h2>Analyze link signals</h2>
+            </div>
+            <div className="status-pill">Live</div>
+          </div>
 
-      <section className="scanner">
-        <div className="inputPanel">
-          <p className="eyebrow">Scan URL</p>
-          <h2>Analyze a link</h2>
+          <label className="input-label" htmlFor="url-input">
+            URL to analyze
+          </label>
 
-          <div className="inputRow">
+          <div className="input-row">
             <input
+              id="url-input"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com or http://secure-paypal-login-verification.com"
+              onChange={(event) => setUrl(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") analyze();
+              }}
+              placeholder="Paste a URL to analyze..."
+              autoComplete="off"
             />
-            <button onClick={handleAnalyze}>Analyze Link</button>
-          </div>
 
-          <div className="examples">
-            <button onClick={() => setUrl("http://secure-paypal-login-verification.com")}>
-              Try dangerous example
+            <button onClick={analyze} disabled={loading || !url.trim()}>
+              {loading ? (
+                <>
+                  <span className="spinner" />
+                  Analyzing...
+                </>
+              ) : (
+                "Analyze URL"
+              )}
             </button>
-            <button onClick={() => setUrl("https://www.microsoft.com")}>
-              Try safe example
-            </button>
           </div>
-        </div>
 
-        <div className={`resultPanel ${result?.status.toLowerCase() || ""}`}>
-          {!result ? (
-            <>
-              <p className="eyebrow">Result</p>
-              <h2>No scan yet</h2>
-              <p className="muted">Enter a URL to see the backend risk analysis.</p>
-            </>
-          ) : (
-            <>
-              <p className="eyebrow">Result</p>
-              <div className="resultTop">
-                <h2>{result.status}</h2>
-                <div className="score">{result.score}%</div>
+          <div className="result-area" aria-live="polite">
+            {!result && !loading && (
+              <div className="empty-state">
+                <div className="empty-icon">⌁</div>
+                <p>Enter a URL to begin safety analysis.</p>
               </div>
+            )}
 
-              <div className="meter">
-                <div style={{ width: `${result.score}%` }} />
+            {loading && (
+              <div className="loading-state">
+                <div className="scan-line" />
+                <p>Analyzing link signals...</p>
               </div>
+            )}
 
-              <h3>Detected issues</h3>
-              <ul>
-                {result.issues.map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      </section>
-
-      <section className="history">
-        <div>
-          <p className="eyebrow">Recent Scans</p>
-          <h2>Scan history</h2>
-        </div>
-
-        {history.length === 0 ? (
-          <p className="muted">No scanned links yet.</p>
-        ) : (
-          <div className="historyList">
-            {history.map((scan, index) => (
-              <div className="historyItem" key={`${scan.url}-${index}`}>
-                <span className={scan.status.toLowerCase()}>{scan.status}</span>
-                <p>{scan.url}</p>
-                <strong>{scan.score}%</strong>
+            {result?.error && (
+              <div className="result-card danger">
+                <h3>Analysis unavailable</h3>
+                <p>
+                  The request could not be completed. Please try again in a few
+                  seconds.
+                </p>
               </div>
-            ))}
+            )}
+
+            {result && !result.error && (
+              <div className={`result-card ${isSafe ? "safe" : "danger"}`}>
+                <div className="result-top">
+                  <div>
+                    <p className="eyebrow">Result</p>
+                    <h3>{isSafe ? "Likely Safe" : "Suspicious Link"}</h3>
+                  </div>
+
+                  <div className="score-ring">
+                    <span>{result.score ?? 0}</span>
+                    <small>%</small>
+                  </div>
+                </div>
+
+                <p className="result-summary">
+                  {isSafe
+                    ? "No major suspicious indicators detected."
+                    : "This URL contains signals that may require caution."}
+                </p>
+
+                {issues.length > 0 && (
+                  <div className="issue-list">
+                    {issues.map((issue, index) => (
+                      <span key={`${issue}-${index}`} className="issue-chip">
+                        {issue}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {result.url && <code className="url-preview">{result.url}</code>}
+              </div>
+            )}
           </div>
-        )}
+
+          <p className="microcopy">
+            CheckLink helps identify suspicious patterns, but no tool can
+            guarantee 100% safety.
+          </p>
+        </section>
+
+        <div className="trust-row">
+          {trustBadges.map((badge) => (
+            <span key={badge}>{badge}</span>
+          ))}
+        </div>
+
+        <div className="how-it-works">
+          {steps.map((step, index) => (
+            <div className="step" key={step}>
+              <span>{index + 1}</span>
+              <p>{step}</p>
+            </div>
+          ))}
+        </div>
       </section>
     </main>
   );
 }
-
-export default App;
