@@ -608,3 +608,63 @@ button:disabled {
     max-width: 100%;
   }
 }
+
+.dashboard-grid {
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.metric-card {
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.metric-card p {
+  margin: 0 0 10px;
+  color: #aab6c5;
+  font-size: 13px;
+}
+
+.metric-card strong {
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+
+.safe-metric strong {
+  color: #2ecc71;
+}
+
+.danger-metric strong {
+  color: #ff5c5c;
+}
+
+.invalid-metric strong {
+  color: #f59e0b;
+}
+
+.app-shell.light .metric-card {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 80px rgba(47, 128, 237, 0.12);
+}
+
+.app-shell.light .metric-card p {
+  color: #4b5563;
+}
+
+@media (max-width: 720px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

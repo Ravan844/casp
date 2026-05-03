@@ -39,6 +39,15 @@ const [history, setHistory] = useState<ScanResult[]>([]);
 
   const issues = useMemo(() => normalizeIssues(result?.issues), [result]);
 
+const dashboard = useMemo(() => {
+  const total = history.length;
+  const safe = history.filter((item) => item.status?.toLowerCase() === "safe").length;
+  const suspicious = history.filter((item) => item.status?.toLowerCase() === "suspicious").length;
+  const invalid = history.filter((item) => item.status?.toLowerCase() === "invalid").length;
+
+  return { total, safe, suspicious, invalid };
+}, [history]);
+
   const isSafe =
     result?.status?.toLowerCase() === "safe" ||
     result?.status?.toLowerCase() === "likely_safe";
@@ -225,6 +234,28 @@ setHistory((prev) => [data, ...prev].slice(0, 8));
             </div>
           ))}
         </div>
+
+{history.length > 0 && (
+  <section className="dashboard-grid">
+    <div className="metric-card">
+      <p>Total scans</p>
+      <strong>{dashboard.total}</strong>
+    </div>
+    <div className="metric-card safe-metric">
+      <p>Likely safe</p>
+      <strong>{dashboard.safe}</strong>
+    </div>
+    <div className="metric-card danger-metric">
+      <p>Suspicious</p>
+      <strong>{dashboard.suspicious}</strong>
+    </div>
+    <div className="metric-card invalid-metric">
+      <p>Invalid</p>
+      <strong>{dashboard.invalid}</strong>
+    </div>
+  </section>
+)}
+
 {history.length > 0 && (
   <section className="history-card">
     <div className="history-header">
