@@ -28,6 +28,10 @@ jobs:
       - name: Terraform init
         run: terraform init
 
+- name: Restore App Gateway certificate
+  run: |
+    echo "${{ secrets.APPGW_CERT_PFX_BASE64 }}" | base64 -d > modules/app-gateway/cert.pfx
+
       - name: Terraform validate
         run: terraform validate
 
