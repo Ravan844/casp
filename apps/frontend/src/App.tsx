@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 type ScanResult = {
@@ -35,6 +35,7 @@ export default function App() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
+const [history, setHistory] = useState<ScanResult[]>([]);
 
   const issues = useMemo(() => normalizeIssues(result?.issues), [result]);
 
@@ -42,6 +43,16 @@ export default function App() {
     result?.status?.toLowerCase() === "safe" ||
     result?.status?.toLowerCase() === "likely_safe";
 
+useEffect(() => {
+  fetch("/api/scans")
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setHistory(data.reverse().slice(0, 8));
+      }
+    })
+    .catch((err) => console.error("History load error:", err));
+}, []);
   const analyze = async () => {
     if (!url.trim()) return;
 
@@ -63,6 +74,7 @@ export default function App() {
 
       const data = await response.json();
       setResult(data);
+setHistory((prev) => [data, ...prev].slice(0, 8));
     } catch (error) {
       console.error("Analyze error:", error);
       setResult({ error: true });
@@ -84,7 +96,7 @@ export default function App() {
             Secure URL Safety Checker
           </div>
 
-          <h1>CheckLink</h1>
+          <h1>LinGuardian</h1>
 
           <p className="subtitle">
             Check suspicious links before you click.
@@ -194,7 +206,7 @@ export default function App() {
           </div>
 
           <p className="microcopy">
-            CheckLink helps identify suspicious patterns, but no tool can
+            LinkGuardian helps identify suspicious patterns, but no tool can
             guarantee 100% safety.
           </p>
         </section>
@@ -213,6 +225,38 @@ export default function App() {
             </div>
           ))}
         </div>
+{history.length > 0 && (
+  <section className="history-card">
+    <div className="history-header">
+      <div>
+        <p className="eyebrow">Recent scans</p>
+        <h2>Scan history</h2>
+      </div>
+      <span>{history.length} saved</span>
+    </div>
+
+    <div className="history-list">
+      {history.map((item, index) => {
+        const safe =
+          item.status?.toLowerCase() === "safe" ||
+          item.status?.toLowerCase() === "likely_safe";
+
+        return (
+          <div className="history-item" key={`${item.url}-${index}`}>
+            <div>
+              <strong>{item.url}</strong>
+              <p>{safe ? "Likely Safe" : "Suspicious Link"}</p>
+            </div>
+
+            <span className={safe ? "history-safe" : "history-danger"}>
+              {item.score ?? 0}%
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}
       </section>
     </main>
   );

@@ -513,3 +513,98 @@ button:disabled {
     transition: none !important;
   }
 }
+
+.history-card {
+  width: min(760px, 100%);
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.history-header span {
+  color: #aab6c5;
+  font-size: 13px;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(16, 24, 39, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.history-item strong {
+  display: block;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: #f5f7fa;
+}
+
+.history-item p {
+  margin: 6px 0 0;
+  color: #aab6c5;
+  font-size: 13px;
+}
+
+.history-safe {
+  color: #2ecc71;
+  font-weight: 800;
+}
+
+.history-danger {
+  color: #ff5c5c;
+  font-weight: 800;
+}
+
+.app-shell.light .history-card,
+.app-shell.light .history-item {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.app-shell.light .history-item strong {
+  color: #0b0f14;
+}
+
+.app-shell.light .history-item p,
+.app-shell.light .history-header span {
+  color: #4b5563;
+}
+
+@media (max-width: 720px) {
+  .history-header,
+  .history-item {
+    align-items: flex-start;
+  }
+
+  .history-item {
+    flex-direction: column;
+  }
+
+  .history-item strong {
+    max-width: 100%;
+  }
+}
